@@ -26,7 +26,7 @@ Puis lorsque vous créé votre objet `CSVFileReader` procéder comme ceci:
 CSVFileReader<Fruit> myFile = new CSVFileReader<Fruit>(pathToTheFile);
 ```
 
-Notez toutefois que si il n'y a pas de fichier à cet endroit, un fichier va y être créé avec à l'intérieur des headers correspondans aux propriétés du model 
+Notez toutefois que si il n'y a pas de fichier à cet endroit, un fichier va y être créé avec à l'intérieur des headers correspondant aux propriétés du model 
 
 Ensuite, il n'y a plus qu'a récupérer la liste de model contneu dans le fichier CSV via la fonction :
 
