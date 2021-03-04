@@ -109,22 +109,32 @@ namespace CSVReader
                 {
                     PropertyInfo prop = model.GetType().GetProperty(Headers[values.IndexOf(v)]);
 
-                    if(prop.PropertyType == typeof(int))
-                    {                        
+                    if (prop.PropertyType == typeof(int))
+                    {
                         //Console.WriteLine($"C'est un entier lol");
                         model.GetType().GetProperty(Headers[values.IndexOf(v)]).SetValue(model, ConvertStringToInt(v), null);
                     }
-                    else if(prop.PropertyType == typeof(double))
+                    else if (prop.PropertyType == typeof(double))
                     {
                         //Console.WriteLine($"C'est un double lol");
                         model.GetType().GetProperty(Headers[values.IndexOf(v)]).SetValue(model, ConvertStringToDouble(v), null);
                     }
-                    else
+                    else if (prop.PropertyType == typeof(float))
+                    {
+                        //Console.WriteLine($"C'est un float lol");
+                        model.GetType().GetProperty(Headers[values.IndexOf(v)]).SetValue(model, ConvertStringToFloat(v), null);
+                    }
+                    else if (prop.PropertyType == typeof(decimal))
+                    {
+                        //Console.WriteLine($"C'est un decimal lol");
+                        model.GetType().GetProperty(Headers[values.IndexOf(v)]).SetValue(model, ConvertStringToDecimal(v), null);
+                    }
+                    else if (prop.PropertyType == typeof(string))
                     {
                         model.GetType().GetProperty(Headers[values.IndexOf(v)]).SetValue(model, v, null);
                     }
-
                 }
+
             }
 
             return model;
@@ -163,6 +173,48 @@ namespace CSVReader
             try
             {             
                 convertedValue = Convert.ToDouble(str.Replace(",", "."), CultureInfo.InvariantCulture);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return convertedValue;
+        }
+
+        /// <summary>
+        /// Renvoi la valeur string convertis en float
+        /// </summary>
+        /// <param name="str">Chaine à convertir</param>
+        /// <returns></returns>
+        private float ConvertStringToFloat(string str)
+        {
+            float convertedValue = 0f;
+
+            try
+            {
+                convertedValue = float.Parse(str.Replace(",", "."), CultureInfo.InvariantCulture);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return convertedValue;
+        }
+
+        /// <summary>
+        /// Renvoi la valeur string convertis en float
+        /// </summary>
+        /// <param name="str">Chaine à convertir</param>
+        /// <returns></returns>
+        private decimal ConvertStringToDecimal(string str)
+        {
+            decimal convertedValue = 0.0M;
+
+            try
+            {
+                convertedValue = decimal.Parse(str.Replace(",", "."), CultureInfo.InvariantCulture);
             }
             catch (Exception ex)
             {
