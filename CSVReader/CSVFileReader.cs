@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace CSVReader
@@ -105,11 +107,69 @@ namespace CSVReader
             {
                 if (values.IndexOf(v) < Headers.Count)
                 {
-                    model.GetType().GetProperty(Headers[values.IndexOf(v)]).SetValue(model, v, null);
+                    PropertyInfo prop = model.GetType().GetProperty(Headers[values.IndexOf(v)]);
+
+                    if(prop.PropertyType == typeof(int))
+                    {                        
+                        //Console.WriteLine($"C'est un entier lol");
+                        model.GetType().GetProperty(Headers[values.IndexOf(v)]).SetValue(model, ConvertStringToInt(v), null);
+                    }
+                    else if(prop.PropertyType == typeof(double))
+                    {
+                        //Console.WriteLine($"C'est un double lol");
+                        model.GetType().GetProperty(Headers[values.IndexOf(v)]).SetValue(model, ConvertStringToDouble(v), null);
+                    }
+                    else
+                    {
+                        model.GetType().GetProperty(Headers[values.IndexOf(v)]).SetValue(model, v, null);
+                    }
+
                 }
             }
 
             return model;
+        }
+
+        /// <summary>
+        /// Renvoi la valeur string conveti en entier
+        /// </summary>
+        /// <param name="str">Chaine à convertir</param>
+        /// <returns></returns>
+        private int ConvertStringToInt(string str)
+        {
+            int convertedValue = 0;
+
+            try
+            {
+                convertedValue = int.Parse(str);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return convertedValue;
+        }
+
+        /// <summary>
+        /// Renvoi la valeur string convertis en double
+        /// </summary>
+        /// <param name="str">Chaine à convertir</param>
+        /// <returns></returns>
+        private double ConvertStringToDouble(string str)
+        {
+            double convertedValue = 0.0;
+
+            try
+            {             
+                convertedValue = Convert.ToDouble(str.Replace(",", "."), CultureInfo.InvariantCulture);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return convertedValue;
         }
 
         /// <summary>

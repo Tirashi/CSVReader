@@ -12,8 +12,8 @@ namespace CSVReaderUI
     {
         public string Nom { get; set; }
         public string Provenance { get; set; }
-        public string Prix { get; set; }
-        public string Quantite { get; set; }
+        public double Prix { get; set; }
+        public int Quantite { get; set; }
         public string Inutile { get; set; }
     }
 }

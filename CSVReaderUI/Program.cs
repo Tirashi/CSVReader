@@ -26,8 +26,8 @@ namespace CSVReaderUI
 
             Console.WriteLine("---------------------------");
 
-            Fruit l = new Fruit() { Nom="Bernard", Prix="10000", Provenance="Nord-ouest", Quantite="150Kg", Inutile="Wesh"};
-            Fruit m = new Fruit() { Nom = "Mangue", Prix = "150", Provenance = "Sud-est", Quantite = "90Kg",Inutile="Hello there" };
+            Fruit l = new Fruit() { Nom="Bernard", Prix = 1000.25, Provenance="Nord-ouest", Quantite=150, Inutile="Wesh"};
+            Fruit m = new Fruit() { Nom = "Mangue", Prix = 145.98, Provenance = "Sud-est", Quantite = 90,Inutile="Hello there" };
 
             List<Fruit> fl = new List<Fruit>();
             fl.Add(l);
