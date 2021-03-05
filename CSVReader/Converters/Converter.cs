@@ -3,23 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace CSVReader
+namespace CSVReader.Converters
 {
     /// <summary>
     /// Classe permettant de convertir des chaine de caractère en un type primitif
     /// </summary>
     /// <typeparam name="T">Type primitif dans lequel on veut convertir une chaine</typeparam>
-    class StringToPrimitiveTypeConverter<T>// where T : IConvertible
+    public abstract class Converter<T>: IConverter
     {
         /// <summary>
         /// Convertie une chaine dans le type <see cref="T"/>
         /// </summary>
         /// <param name="value">Valeur à convertir</param>
         /// <returns></returns>
-        public T GetConvertedValue(string value)
-        {
-            return(T)Convert.ChangeType(value, typeof(T));
-        }
+        public abstract T GetConvertedValue(string value);
 
         /// <summary>
         /// Convertie une valeur de type <see cref="T"/> en string
@@ -31,5 +28,9 @@ namespace CSVReader
             return value.ToString();
         }
 
+        object IConverter.GetConvertedValue(string value)
+        {
+            return GetConvertedValue(value);
+        }
     }
 }

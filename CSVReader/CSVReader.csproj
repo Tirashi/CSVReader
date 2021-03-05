@@ -40,9 +40,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Converters\PrimitiveConverters\DoubleConverter.cs" />
     <Compile Include="CSVFileReader.cs" />
+    <Compile Include="Converters\IConverter.cs" />
+    <Compile Include="Converters\PrimitiveConverters\IntConverter.cs" />
+    <Compile Include="Attributes\OverrideConverterAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StringToPrimitiveTypeConverter.cs" />
+    <Compile Include="Converters\Converter.cs" />
+    <Compile Include="Converters\PrimitiveConverters\StringConverter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CSVReader.Attributes;
+using CSVReader.Converters;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -17,6 +19,36 @@ namespace CSVReader
         private string _filePath;
 
         public List<string> Headers { get; private set; }
+
+        /// <summary>
+        /// Mapping des types primitif et de leur class de conversion par défaut
+        /// </summary>
+        private static readonly Dictionary<Type, Type> _typeMap;
+
+        /// <summary>
+        /// Pool d'objet pour effectuer les convertion
+        /// </summary>
+        private static readonly List<IConverter> _converters;
+
+        /// <summary>
+        /// Constructeur static pour instancier les pool et map de type
+        /// </summary>
+        static CSVFileReader()
+        {
+            _typeMap = new Dictionary<Type, Type>
+            {
+                [typeof(int)] = typeof(IntConverter),
+                [typeof(double)] = typeof(DoubleConverter),
+                [typeof(string)] = typeof(StringConverter)
+            };
+
+            _converters = new List<IConverter>
+            {
+                IntConverter.Instance,
+                DoubleConverter.Instance,
+                StringConverter.Instance
+            };
+        }
 
         /// <summary>
         /// Constructeur de la classe
@@ -105,35 +137,36 @@ namespace CSVReader
 
             foreach (string v in values)
             {
-                if (values.IndexOf(v) < Headers.Count)
-                {
-                    PropertyInfo prop = model.GetType().GetProperty(Headers[values.IndexOf(v)]);
+                int headerIndex = values.IndexOf(v);
 
-                    if (prop.PropertyType == typeof(int))
-                    {
-                        //Console.WriteLine($"C'est un entier lol");
-                        model.GetType().GetProperty(Headers[values.IndexOf(v)]).SetValue(model, ConvertStringToInt(v), null);
-                    }
-                    else if (prop.PropertyType == typeof(double))
-                    {
-                        //Console.WriteLine($"C'est un double lol");
-                        model.GetType().GetProperty(Headers[values.IndexOf(v)]).SetValue(model, ConvertStringToDouble(v), null);
-                    }
-                    else if (prop.PropertyType == typeof(float))
-                    {
-                        //Console.WriteLine($"C'est un float lol");
-                        model.GetType().GetProperty(Headers[values.IndexOf(v)]).SetValue(model, ConvertStringToFloat(v), null);
-                    }
-                    else if (prop.PropertyType == typeof(decimal))
-                    {
-                        //Console.WriteLine($"C'est un decimal lol");
-                        model.GetType().GetProperty(Headers[values.IndexOf(v)]).SetValue(model, ConvertStringToDecimal(v), null);
-                    }
-                    else if (prop.PropertyType == typeof(string))
-                    {
-                        model.GetType().GetProperty(Headers[values.IndexOf(v)]).SetValue(model, v, null);
-                    }
+                if (headerIndex >= Headers.Count)
+                {
+                    continue;
                 }
+
+                PropertyInfo prop = typeof(T).GetProperty(Headers[headerIndex]);
+
+                var obj = prop.GetCustomAttributes(typeof(OverrideConverterAttribute), true);
+
+                Type classConverter;
+
+                if (obj.Length > 0)
+                {
+                    classConverter = (obj[0] as OverrideConverterAttribute).Type;
+                }
+                else
+                {
+                    classConverter = Assembly.GetExecutingAssembly().GetTypes().FirstOrDefault(t => typeof(Converter<>).MakeGenericType(prop.PropertyType).IsAssignableFrom(t));
+                }
+
+                if (classConverter == null)
+                {
+                    throw new Exception("No converter found for this type");
+                }
+
+                var instanceConverter = GetOrCreateConverter(classConverter);
+
+                prop.SetValue(model, instanceConverter.GetConvertedValue(v), null);
 
             }
 
@@ -171,7 +204,7 @@ namespace CSVReader
             double convertedValue = 0.0;
 
             try
-            {             
+            {
                 convertedValue = Convert.ToDouble(str.Replace(",", "."), CultureInfo.InvariantCulture);
             }
             catch (Exception ex)
@@ -319,7 +352,7 @@ namespace CSVReader
         /// <param name="model">Model à convertir</param>
         /// <returns></returns>
         private string ConvertModelToCSVString(T model)
-        {            
+        {
             string[] arrStr = OrderModelValues(model);
             string res = ConvertListToCSVLine(arrStr.ToList());
 
@@ -390,11 +423,11 @@ namespace CSVReader
         {
             string res = "";
 
-            foreach(string s in listToConvert)
+            foreach (string s in listToConvert)
             {
                 res += $"{s}";
 
-                if(s != listToConvert.Last())
+                if (s != listToConvert.Last())
                 {
                     res += $"{_separator}";
                 }
@@ -427,7 +460,7 @@ namespace CSVReader
         /// <param name="models">List de model à ajouter</param>
         public void AddData(List<T> models)
         {
-            foreach(T model in models)
+            foreach (T model in models)
             {
                 AddData(model);
             }
@@ -451,6 +484,23 @@ namespace CSVReader
         {
             CreateCSVFile();
             AddData(model);
+        }
+
+        /// <summary>
+        /// Permet de récupérer un converter depuis le pool, ajoute le converter au pool si il n'existe pas
+        /// </summary>
+        /// <param name="converterType">Type de converter que l'on veut</param>
+        /// <returns></returns>
+        private static IConverter GetOrCreateConverter(Type converterType)
+        {
+            IConverter res = _converters.FirstOrDefault(c => c.GetType() == converterType);
+
+            if(res == null)
+            {
+                res = (IConverter)Activator.CreateInstance(converterType);
+                _converters.Add(res);
+            }
+            return res;
         }
     }
 }

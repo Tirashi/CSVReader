@@ -26,8 +26,8 @@ namespace CSVReaderUI
 
             Console.WriteLine("---------------------------");
 
-            Fruit l = new Fruit() { Nom="Bernard", Prix = 1000.25M, Provenance="Nord-ouest", Quantite = 150.30f, Inutile="Wesh"};
-            Fruit m = new Fruit() { Nom = "Mangue", Prix = 145.98M, Provenance = "Sud-est", Quantite = 90.69f,Inutile="Hello there" };
+            Fruit l = new Fruit() { Nom="Bernard", Prix = 1000.32, Provenance="Nord-ouest", Quantite = 150, Inutile="Wesh"};
+            Fruit m = new Fruit() { Nom = "Mangue", Prix = 145, Provenance = "Sud-est", Quantite = 90,Inutile="Hello there" };
 
             List<Fruit> fl = new List<Fruit>();
             fl.Add(l);
@@ -44,7 +44,7 @@ namespace CSVReaderUI
             Console.WriteLine("----------+----------+----------+----------+");
             foreach (Fruit f in fruits)
             {
-                string lol = $"{f.Nom,-10}|{f.Prix,-10}|{f.Provenance,-10}|{f.Quantite,-10}";
+                string lol = $"{f.Nom,-10}|{f.Provenance,-10}|{f.Prix,-10}|{f.Quantite,-10}";
                 Console.WriteLine(lol);
             }
 
