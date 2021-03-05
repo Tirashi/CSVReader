@@ -154,15 +154,14 @@ namespace CSVReader
                 {
                     classConverter = (obj[0] as OverrideConverterAttribute).Type;
                 }
-                else
+                else if (!_typeMap.TryGetValue(prop.PropertyType, out classConverter))
                 {
-                    classConverter = Assembly.GetExecutingAssembly().GetTypes().FirstOrDefault(t => typeof(Converter<>).MakeGenericType(prop.PropertyType).IsAssignableFrom(t));
+                    //classConverter = Assembly.GetExecutingAssembly().GetTypes().FirstOrDefault(t => typeof(Converter<>).MakeGenericType(prop.PropertyType).IsAssignableFrom(t));
+
+                    throw new Exception("No converter found for this type");
+
                 }
 
-                if (classConverter == null)
-                {
-                    throw new Exception("No converter found for this type");
-                }
 
                 var instanceConverter = GetOrCreateConverter(classConverter);
 
@@ -495,7 +494,7 @@ namespace CSVReader
         {
             IConverter res = _converters.FirstOrDefault(c => c.GetType() == converterType);
 
-            if(res == null)
+            if (res == null)
             {
                 res = (IConverter)Activator.CreateInstance(converterType);
                 _converters.Add(res);
