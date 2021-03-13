@@ -40,7 +40,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Converters\PrimitiveConverters\DecimalConverter.cs" />
     <Compile Include="Converters\PrimitiveConverters\DoubleConverter.cs" />
+    <Compile Include="Converters\PrimitiveConverters\FloatConverter.cs" />
     <Compile Include="CSVFileReader.cs" />
     <Compile Include="Converters\IConverter.cs" />
     <Compile Include="Converters\PrimitiveConverters\IntConverter.cs" />

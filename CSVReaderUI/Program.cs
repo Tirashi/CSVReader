@@ -10,7 +10,7 @@ namespace CSVReaderUI
     {
         static void Main(string[] args)
         {
-            string path = @"C:\Users\Rudy\Documents\Perso\Fruits.csv";
+            string path = @"..\..\Fruits.csv";
 
             List<Fruit> fruits = new List<Fruit>();
             CSVFileReader<Fruit> myFile = new CSVFileReader<Fruit>(path);
