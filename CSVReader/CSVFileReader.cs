@@ -39,14 +39,18 @@ namespace CSVReader
             {
                 [typeof(int)] = typeof(IntConverter),
                 [typeof(double)] = typeof(DoubleConverter),
-                [typeof(string)] = typeof(StringConverter)
+                [typeof(string)] = typeof(StringConverter),
+                [typeof(decimal)] = typeof(DecimalConverter),
+                [typeof(float)] = typeof(FloatConverter)
             };
 
             _converters = new List<IConverter>
             {
                 IntConverter.Instance,
                 DoubleConverter.Instance,
-                StringConverter.Instance
+                StringConverter.Instance,
+                DecimalConverter.Instance,
+                FloatConverter.Instance
             };
         }
 
