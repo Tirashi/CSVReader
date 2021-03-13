@@ -8,6 +8,8 @@ namespace CSVReader.Converters.PrimitiveConverters
 {
     class FloatConverter : Converter<float>
     {
+        public static readonly FloatConverter Instance = new FloatConverter();
+
         public override float GetConvertedValue(string value)
         {
             return float.Parse(value.Replace(',', '.'), CultureInfo.InvariantCulture);

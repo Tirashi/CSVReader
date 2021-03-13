@@ -16,7 +16,7 @@ namespace CSVReaderUI
         public string Provenance { get; set; }
         public double Prix { get; set; }
 
-        [OverrideConverter(typeof(IntConverter))]
+        [OverrideConverter(typeof(MyIntConverter))]
         public int Quantite { get; set; }
         public string Inutile { get; set; }
     }

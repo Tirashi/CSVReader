@@ -8,6 +8,8 @@ namespace CSVReader.Converters
 {
     class DecimalConverter : Converter<decimal>
     {
+        public static readonly DecimalConverter Instance = new DecimalConverter();
+
         public override decimal GetConvertedValue(string value)
         {
             return decimal.Parse(value.Replace(',', '.'), CultureInfo.InvariantCulture);
