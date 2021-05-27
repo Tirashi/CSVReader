@@ -23,9 +23,23 @@ namespace CSVReader.Converters
         /// </summary>
         /// <param name="value">Valeur à convertir en chaine de caractère</param>
         /// <returns></returns>
-        public string GetStringValue(T value)
+        public virtual string GetStringValue(T value)
         {
-            return value.ToString();
+            return value + "";
+        }
+
+        
+        string IConverter.GetStringValue(object value)
+        {
+            
+            try
+            {
+                return GetStringValue((T)Convert.ChangeType(value, typeof(T)));
+            }
+            catch (InvalidCastException)
+            {
+                throw new Exception("Impossible to convert" + typeof(object) + "in" + typeof(T));
+            }
         }
 
         object IConverter.GetConvertedValue(string value)

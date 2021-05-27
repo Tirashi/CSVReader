@@ -77,7 +77,7 @@ namespace CSVReader
         }
 
         /// <summary>
-        /// Met à jour la liste des headers en fonction du model de deonnée
+        /// Met à jour la liste des headers en fonction du model de donnée
         /// </summary>
         public void GetHeaderFromModel()
         {
@@ -150,30 +150,40 @@ namespace CSVReader
 
                 PropertyInfo prop = typeof(T).GetProperty(Headers[headerIndex]);
 
-                var obj = prop.GetCustomAttributes(typeof(OverrideConverterAttribute), true);
-
-                Type classConverter;
-
-                if (obj.Length > 0)
-                {
-                    classConverter = (obj[0] as OverrideConverterAttribute).Type;
-                }
-                else if (!_typeMap.TryGetValue(prop.PropertyType, out classConverter))
-                {
-                    //classConverter = Assembly.GetExecutingAssembly().GetTypes().FirstOrDefault(t => typeof(Converter<>).MakeGenericType(prop.PropertyType).IsAssignableFrom(t));
-
-                    throw new Exception("No converter found for this type");
-
-                }
-
-
-                var instanceConverter = GetOrCreateConverter(classConverter);
+                var instanceConverter = GetConverter(prop);
 
                 prop.SetValue(model, instanceConverter.GetConvertedValue(v), null);
 
             }
 
             return model;
+        }
+
+        /// <summary>
+        /// Permet d'avoir le bon objet IConverter pour convertir une property
+        /// </summary>
+        /// <param name="prop">Property à convertir</param>
+        /// <returns>Objet IConverter permettant de convertir la property</returns>
+        private IConverter GetConverter(PropertyInfo prop)
+        {
+            var obj = prop.GetCustomAttributes(typeof(OverrideConverterAttribute), true);
+
+            Type classConverter;
+
+            if (obj.Length > 0)
+            {
+                classConverter = (obj[0] as OverrideConverterAttribute).Type;
+            }
+            else if (!_typeMap.TryGetValue(prop.PropertyType, out classConverter))
+            {
+                //classConverter = Assembly.GetExecutingAssembly().GetTypes().FirstOrDefault(t => typeof(Converter<>).MakeGenericType(prop.PropertyType).IsAssignableFrom(t));
+
+                throw new Exception("No converter found for this type");
+            }
+
+            var instanceConverter = GetOrCreateConverter(classConverter);
+
+            return instanceConverter;
         }
 
         /// <summary>
@@ -310,7 +320,7 @@ namespace CSVReader
         }
 
         /// <summary>
-        /// Met les valeur du model dans le tableau de string en respectant l'ordre donné par les headers
+        /// Met les valeurs du model dans le tableau de string en respectant l'ordre donné par les headers
         /// </summary>
         /// <param name="model">Model dont on veut les valeurs dans le bon ordre</param>
         /// <param name="arr">Array où mettre les valeurs</param>
@@ -325,7 +335,9 @@ namespace CSVReader
 
                 if (index > -1 && index < arr.Length)
                 {
-                    arr[index] = prop.GetValue(model, null) + "";
+                    var converter = GetConverter(prop);
+                    arr[index] = converter.GetStringValue(prop.GetValue(model, null));
+                    //arr[index] = prop.GetValue(model, null) + "";
                 }
 
             }

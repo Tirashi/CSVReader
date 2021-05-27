@@ -42,6 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Fruit.cs" />
+    <Compile Include="Legumes.cs" />
+    <Compile Include="MyBooleanConverter.cs" />
     <Compile Include="MyIntConverter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
