@@ -6,7 +6,7 @@ using System.Text;
 
 namespace CSVReader.Converters
 {
-    class DecimalConverter : Converter<decimal>
+    public class DecimalConverter : Converter<decimal>
     {
         public static readonly DecimalConverter Instance = new DecimalConverter();
 

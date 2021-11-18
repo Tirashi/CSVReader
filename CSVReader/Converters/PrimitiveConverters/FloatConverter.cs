@@ -6,7 +6,7 @@ using System.Text;
 
 namespace CSVReader.Converters
 {
-    class FloatConverter : Converter<float>
+    public class FloatConverter : Converter<float>
     {
         public static readonly FloatConverter Instance = new FloatConverter();
 

@@ -95,6 +95,7 @@ namespace CSVReader
         private void CreateCSVFile()
         {
             string header = ConvertHeaderToCSV();
+            Directory.CreateDirectory(Path.GetDirectoryName(_filePath));
             File.WriteAllText(_filePath, header);
         }
 
@@ -139,9 +140,9 @@ namespace CSVReader
 
             List<string> values = line.Split(_separator).ToList();
 
-            foreach (string v in values)
+            for (int i = 0; i < values.Count; i++)
             {
-                int headerIndex = values.IndexOf(v);
+                int headerIndex = i;
 
                 if (headerIndex >= Headers.Count)
                 {
@@ -152,9 +153,25 @@ namespace CSVReader
 
                 var instanceConverter = GetConverter(prop);
 
-                prop.SetValue(model, instanceConverter.GetConvertedValue(v), null);
-
+                prop.SetValue(model, instanceConverter.GetConvertedValue(values[i]), null);
             }
+
+            //foreach (string v in values)
+            //{
+            //    int headerIndex = values.IndexOf(v);
+
+            //    if (headerIndex >= Headers.Count)
+            //    {
+            //        continue;
+            //    }
+
+            //    PropertyInfo prop = typeof(T).GetProperty(Headers[headerIndex]);
+
+            //    var instanceConverter = GetConverter(prop);
+
+            //    prop.SetValue(model, instanceConverter.GetConvertedValue(v), null);
+
+            //}
 
             return model;
         }
@@ -354,15 +371,26 @@ namespace CSVReader
         {
             string res = "";
 
-            foreach (string s in listToConvert)
+            for (int i = 0; i < listToConvert.Count; i++)
             {
-                res += $"{s}";
+                res += $"{listToConvert[i]}";
 
-                if (s != listToConvert.Last())
+                if (i < listToConvert.Count - 1)
                 {
                     res += $"{_separator}";
+
                 }
             }
+
+            //foreach (string s in listToConvert)
+            //{
+            //    res += $"{s}";
+
+            //    if (s != listToConvert.Last())
+            //    {
+            //        res += $"{_separator}";
+            //    }
+            //}
 
             return res;
         }

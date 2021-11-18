@@ -21,7 +21,7 @@ namespace CSVReaderUI
 
         public static void TestLegume()
         {
-            string path = @"..\..\Legumes.csv";
+            string path = @"..\..\prout\Legumes.csv";
 
             List<Legumes> legumes = new List<Legumes>();
             CSVFileReader<Legumes> myFile = new CSVFileReader<Legumes>(path);
