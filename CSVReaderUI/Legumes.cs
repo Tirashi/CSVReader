@@ -1,5 +1,4 @@
 ﻿using CSVReader.Attributes;
-using CSVReader.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,16 +7,14 @@ using System.Text;
 namespace CSVReaderUI
 {
     /// <summary>
-    /// Model d'un fruit
+    /// Modele d'un légume
     /// </summary>
-    public class Fruit
-    {        
+    class Legumes
+    {
         public string Nom { get; set; }
         public string Provenance { get; set; }
-        public double Prix { get; set; }
 
-        [OverrideConverter(typeof(MyIntConverter))]
-        public int Quantite { get; set; }
-        public string Inutile { get; set; }
+        [OverrideConverter(typeof(MyBooleanConverter))]
+        public bool Comestible { get; set; }
     }
 }

@@ -1,7 +1,11 @@
-﻿using System;
+﻿using CSVReader.Attributes;
+using CSVReader.Converters;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace CSVReader
@@ -15,6 +19,40 @@ namespace CSVReader
         private string _filePath;
 
         public List<string> Headers { get; private set; }
+
+        /// <summary>
+        /// Mapping des types primitif et de leur class de conversion par défaut
+        /// </summary>
+        private static readonly Dictionary<Type, Type> _typeMap;
+
+        /// <summary>
+        /// Pool d'objet pour effectuer les convertion
+        /// </summary>
+        private static readonly List<IConverter> _converters;
+
+        /// <summary>
+        /// Constructeur static pour instancier les pool et map de type
+        /// </summary>
+        static CSVFileReader()
+        {
+            _typeMap = new Dictionary<Type, Type>
+            {
+                [typeof(int)] = typeof(IntConverter),
+                [typeof(double)] = typeof(DoubleConverter),
+                [typeof(string)] = typeof(StringConverter),
+                [typeof(decimal)] = typeof(DecimalConverter),
+                [typeof(float)] = typeof(FloatConverter)
+            };
+
+            _converters = new List<IConverter>
+            {
+                IntConverter.Instance,
+                DoubleConverter.Instance,
+                StringConverter.Instance,
+                DecimalConverter.Instance,
+                FloatConverter.Instance
+            };
+        }
 
         /// <summary>
         /// Constructeur de la classe
@@ -39,7 +77,7 @@ namespace CSVReader
         }
 
         /// <summary>
-        /// Met à jour la liste des headers en fonction du model de deonnée
+        /// Met à jour la liste des headers en fonction du model de donnée
         /// </summary>
         public void GetHeaderFromModel()
         {
@@ -57,6 +95,7 @@ namespace CSVReader
         private void CreateCSVFile()
         {
             string header = ConvertHeaderToCSV();
+            Directory.CreateDirectory(Path.GetDirectoryName(_filePath));
             File.WriteAllText(_filePath, header);
         }
 
@@ -101,15 +140,67 @@ namespace CSVReader
 
             List<string> values = line.Split(_separator).ToList();
 
-            foreach (string v in values)
+            for (int i = 0; i < values.Count; i++)
             {
-                if (values.IndexOf(v) < Headers.Count)
+                int headerIndex = i;
+
+                if (headerIndex >= Headers.Count)
                 {
-                    model.GetType().GetProperty(Headers[values.IndexOf(v)]).SetValue(model, v, null);
+                    continue;
                 }
+
+                PropertyInfo prop = typeof(T).GetProperty(Headers[headerIndex]);
+
+                var instanceConverter = GetConverter(prop);
+
+                prop.SetValue(model, instanceConverter.GetConvertedValue(values[i]), null);
             }
 
+            //foreach (string v in values)
+            //{
+            //    int headerIndex = values.IndexOf(v);
+
+            //    if (headerIndex >= Headers.Count)
+            //    {
+            //        continue;
+            //    }
+
+            //    PropertyInfo prop = typeof(T).GetProperty(Headers[headerIndex]);
+
+            //    var instanceConverter = GetConverter(prop);
+
+            //    prop.SetValue(model, instanceConverter.GetConvertedValue(v), null);
+
+            //}
+
             return model;
+        }
+
+        /// <summary>
+        /// Permet d'avoir le bon objet IConverter pour convertir une property
+        /// </summary>
+        /// <param name="prop">Property à convertir</param>
+        /// <returns>Objet IConverter permettant de convertir la property</returns>
+        private IConverter GetConverter(PropertyInfo prop)
+        {
+            var obj = prop.GetCustomAttributes(typeof(OverrideConverterAttribute), true);
+
+            Type classConverter;
+
+            if (obj.Length > 0)
+            {
+                classConverter = (obj[0] as OverrideConverterAttribute).Type;
+            }
+            else if (!_typeMap.TryGetValue(prop.PropertyType, out classConverter))
+            {
+                //classConverter = Assembly.GetExecutingAssembly().GetTypes().FirstOrDefault(t => typeof(Converter<>).MakeGenericType(prop.PropertyType).IsAssignableFrom(t));
+
+                throw new Exception("No converter found for this type");
+            }
+
+            var instanceConverter = GetOrCreateConverter(classConverter);
+
+            return instanceConverter;
         }
 
         /// <summary>
@@ -207,7 +298,7 @@ namespace CSVReader
         /// <param name="model">Model à convertir</param>
         /// <returns></returns>
         private string ConvertModelToCSVString(T model)
-        {            
+        {
             string[] arrStr = OrderModelValues(model);
             string res = ConvertListToCSVLine(arrStr.ToList());
 
@@ -246,7 +337,7 @@ namespace CSVReader
         }
 
         /// <summary>
-        /// Met les valeur du model dans le tableau de string en respectant l'ordre donné par les headers
+        /// Met les valeurs du model dans le tableau de string en respectant l'ordre donné par les headers
         /// </summary>
         /// <param name="model">Model dont on veut les valeurs dans le bon ordre</param>
         /// <param name="arr">Array où mettre les valeurs</param>
@@ -261,7 +352,9 @@ namespace CSVReader
 
                 if (index > -1 && index < arr.Length)
                 {
-                    arr[index] = prop.GetValue(model, null) + "";
+                    var converter = GetConverter(prop);
+                    arr[index] = converter.GetStringValue(prop.GetValue(model, null));
+                    //arr[index] = prop.GetValue(model, null) + "";
                 }
 
             }
@@ -278,15 +371,26 @@ namespace CSVReader
         {
             string res = "";
 
-            foreach(string s in listToConvert)
+            for (int i = 0; i < listToConvert.Count; i++)
             {
-                res += $"{s}";
+                res += $"{listToConvert[i]}";
 
-                if(s != listToConvert.Last())
+                if (i < listToConvert.Count - 1)
                 {
                     res += $"{_separator}";
+
                 }
             }
+
+            //foreach (string s in listToConvert)
+            //{
+            //    res += $"{s}";
+
+            //    if (s != listToConvert.Last())
+            //    {
+            //        res += $"{_separator}";
+            //    }
+            //}
 
             return res;
         }
@@ -315,7 +419,7 @@ namespace CSVReader
         /// <param name="models">List de model à ajouter</param>
         public void AddData(List<T> models)
         {
-            foreach(T model in models)
+            foreach (T model in models)
             {
                 AddData(model);
             }
@@ -339,6 +443,23 @@ namespace CSVReader
         {
             CreateCSVFile();
             AddData(model);
+        }
+
+        /// <summary>
+        /// Permet de récupérer un converter depuis le pool, ajoute le converter au pool si il n'existe pas
+        /// </summary>
+        /// <param name="converterType">Type de converter que l'on veut</param>
+        /// <returns></returns>
+        private static IConverter GetOrCreateConverter(Type converterType)
+        {
+            IConverter res = _converters.FirstOrDefault(c => c.GetType() == converterType);
+
+            if (res == null)
+            {
+                res = (IConverter)Activator.CreateInstance(converterType);
+                _converters.Add(res);
+            }
+            return res;
         }
     }
 }

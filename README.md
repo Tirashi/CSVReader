@@ -1,9 +1,18 @@
 # CSVReader
-Petite classe pour aider à manipuler des fichier CSV en utilisant des model
+
+Ce projet contient un ensemble de classes permettat de manipuler un fichier CSV sous la forme d'un model
 
 # Utilisation
 
-Pour le moment la class ne gère que les models contenant des propriété de type `string`
+De base, le projet existant peut gérer des modèles contenant les type primaire suivant :
+
+- `string`
+- `int`
+- `double`
+- `decimal`
+- `float`
+
+Nous verrons plus loi comment créer des classe de conversion personalisé.
 
 ## Lecture d'un fichier CSV
 
@@ -14,8 +23,8 @@ public class Fruit
 {
     public string Nom { get; set; }
     public string Provenance { get; set; }
-    public string Prix { get; set; }
-    public string Quantite { get; set; }
+    public double Prix { get; set; }
+    public int Quantite { get; set; }
     public string Inutile { get; set; }
 }
 ```
@@ -28,7 +37,7 @@ CSVFileReader<Fruit> myFile = new CSVFileReader<Fruit>(pathToTheFile);
 
 Notez toutefois que si il n'y a pas de fichier à cet endroit, un fichier va y être créé avec à l'intérieur des headers correspondant aux propriétés du model 
 
-Ensuite, il n'y a plus qu'a récupérer la liste de model contneu dans le fichier CSV via la fonction :
+Ensuite, il n'y a plus qu'a récupérer la liste de model contenu dans le fichier CSV via la fonction :
 
 ```csharp
 List<Fruit> fruits = new List<Fruit>();
@@ -50,7 +59,38 @@ myFile.AddData(mangue);
 
 Vous pouvez un model ou une liste de votre model.
 
-## Queslques fonctions
+## Créer une classe de conversion personalisé
+
+Admettons que vous vouliez que les `int` venant de votre ficher CSV soit toujours égal à zéro (par ce que pourquoi pas!).
+
+Tout d'abord il faut créer un clase qui va hériter de la classe `converter<>` en indiquant entre les chevrons pour quelle type vous voulez faire cette conversion. Puis il suffit d'implémenter la fonction `GetConvertedValue`.
+
+```csharp
+class MyIntConverter: Converter<int>
+{
+    public override int GetConvertedValue(string value)
+    {
+        return 0;
+    }
+}
+```
+
+Enfin, il faudra ajouter un `attribute` dans votre model pour indiquer quelle variable doit être convertis avec votre classe perso.
+
+```csharp
+public class Fruit
+{        
+    public string Nom { get; set; }
+    public string Provenance { get; set; }
+    public double Prix { get; set; }
+
+    [OverrideConverter(typeof(MyIntConverter))]
+    public int Quantite { get; set; }
+    public string Inutile { get; set; }
+}
+```
+
+## Quelques fonctions utiles
 
 ### `GetData()`
 ```csharp
